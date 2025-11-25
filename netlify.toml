@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[context.production.environment]
+# Ensure Vite runs a production build on Netlify. Adjust Node version if needed.
+# NODE_VERSION = "18"
