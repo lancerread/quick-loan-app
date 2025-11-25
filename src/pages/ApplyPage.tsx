@@ -9,12 +9,20 @@ import FailedModal from '@/components/FailedModal';
 import { ArrowLeft } from 'lucide-react';
 
 const loanOptions = [
-  { amount: 500, fee: 50, totalRepayment: 550 },
-  { amount: 1000, fee: 100, totalRepayment: 1100 },
-  { amount: 2000, fee: 180, totalRepayment: 2180 },
-  { amount: 3000, fee: 250, totalRepayment: 3250 },
-  { amount: 5000, fee: 400, totalRepayment: 5400 },
-  { amount: 10000, fee: 750, totalRepayment: 10750 },
+  { amount: 5500, fee: 50, totalRepayment: 5550 },
+  { amount: 6800, fee: 80, totalRepayment: 6880 },
+  { amount: 7800, fee: 120, totalRepayment: 7920 },
+  { amount: 9800, fee: 140, totalRepayment: 9940 },
+  { amount: 11200, fee: 180, totalRepayment: 11380 },
+  { amount: 16800, fee: 200, totalRepayment: 17000 },
+  { amount: 21200, fee: 220, totalRepayment: 21420 },
+  { amount: 25600, fee: 350, totalRepayment: 25950 },
+  { amount: 30000, fee: 420, totalRepayment: 30420 },
+  { amount: 35400, fee: 540, totalRepayment: 35940 },
+  { amount: 39800, fee: 680, totalRepayment: 40480 },
+  { amount: 44200, fee: 960, totalRepayment: 45160 },
+  { amount: 48600, fee: 1550, totalRepayment: 50150 },
+  { amount: 60600, fee: 2000, totalRepayment: 62600 },
 ];
 
 const ApplyPage = () => {
