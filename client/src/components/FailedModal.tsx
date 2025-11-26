@@ -1,4 +1,4 @@
-import { useLoanContext } from '@/context/LoanContext';
+import { useLoanContext } from '../context/LoanContext';
 import {
   Dialog,
   DialogContent,

@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (keep credentials safe)
+.env
+.env.local
+.env.*.local
+
+# Replit specific
+.replit
+replit.nix
