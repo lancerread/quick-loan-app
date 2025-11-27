@@ -95,9 +95,9 @@ const ConfirmModal = () => {
               </span>
             </div>
 
-            <div className="flex justify-between items-center p-4 bg-secondary rounded-lg">
-              <span className="text-muted-foreground">Processing Fee:</span>
-              <span className="text-lg font-semibold text-foreground" data-testid="text-fee">
+            <div className="flex justify-between items-center p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <span className="text-muted-foreground">Processing Fee (to charge):</span>
+              <span className="text-lg font-semibold text-destructive" data-testid="text-fee">
                 KSh {selectedLoan.fee.toLocaleString()}
               </span>
             </div>
@@ -107,6 +107,12 @@ const ConfirmModal = () => {
               <span className="text-2xl font-bold text-primary" data-testid="text-total">
                 KSh {selectedLoan.totalRepayment.toLocaleString()}
               </span>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                An M-Pesa STK prompt will charge KSh {selectedLoan.fee.toLocaleString()} as the processing fee. You'll then receive KSh {selectedLoan.amount.toLocaleString()} as your loan.
+              </p>
             </div>
 
             <div className="pt-4">
@@ -130,7 +136,7 @@ const ConfirmModal = () => {
                 </p>
               )}
               <p className="text-xs text-muted-foreground mt-2">
-                You'll receive an M-Pesa STK prompt on this number
+                You'll receive an M-Pesa STK prompt to enter your PIN
               </p>
             </div>
           </div>
@@ -165,7 +171,7 @@ const ConfirmModal = () => {
       <Dialog open={modalState === 'processing'}>
         <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle className="text-2xl">Processing Payment</DialogTitle>
+            <DialogTitle className="text-2xl">Processing Fee Charge</DialogTitle>
             <DialogDescription>
               Check your phone for an M-Pesa prompt
             </DialogDescription>
@@ -177,7 +183,7 @@ const ConfirmModal = () => {
               We've sent an M-Pesa STK prompt to {paymentData.phone}
             </p>
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Enter your M-Pesa PIN to complete the payment
+              Enter your M-Pesa PIN to charge the processing fee
             </p>
           </div>
         </DialogContent>
@@ -187,9 +193,9 @@ const ConfirmModal = () => {
       <Dialog open={modalState === 'success'} onOpenChange={() => setModalState('none')}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-green-600">Payment Successful!</DialogTitle>
+            <DialogTitle className="text-2xl text-green-600">Processing Fee Charged!</DialogTitle>
             <DialogDescription>
-              Your loan has been approved and processed
+              Your loan has been approved
             </DialogDescription>
           </DialogHeader>
 
@@ -199,9 +205,15 @@ const ConfirmModal = () => {
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between p-3 bg-secondary rounded">
-                <span className="text-muted-foreground">Amount Received:</span>
-                <span className="font-semibold" data-testid="text-success-amount">
+              <div className="flex justify-between p-3 bg-destructive/10 rounded border border-destructive/30">
+                <span className="text-muted-foreground">Processing Fee Charged:</span>
+                <span className="font-semibold text-destructive" data-testid="text-fee-charged">
+                  KSh {selectedLoan.fee.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
+                <span className="text-muted-foreground">Loan Approved:</span>
+                <span className="font-semibold text-green-600" data-testid="text-success-amount">
                   KSh {selectedLoan.amount.toLocaleString()}
                 </span>
               </div>
@@ -213,9 +225,11 @@ const ConfirmModal = () => {
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground text-center pt-4">
-              The funds have been transferred to your M-Pesa account. You can now proceed with your needs.
-            </p>
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                Processing fee of KSh {selectedLoan.fee.toLocaleString()} has been charged to your M-Pesa account. Your loan of KSh {selectedLoan.amount.toLocaleString()} will be disbursed shortly. You'll repay KSh {selectedLoan.totalRepayment.toLocaleString()} over time.
+              </p>
+            </div>
           </div>
 
           <DialogFooter>
