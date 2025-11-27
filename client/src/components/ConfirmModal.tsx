@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLoanContext } from '../context/LoanContext';
+import { usePaymentHandler } from './PaymentHandler';
 import {
   Dialog,
   DialogContent,
@@ -13,10 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const ConfirmModal = () => {
-  const { selectedLoan, modalState, setModalState, formData, paymentData, setPaymentData } = useLoanContext();
+  const { selectedLoan, modalState, setModalState, formData, paymentData } = useLoanContext();
+  const { initiatePayment, isProcessing } = usePaymentHandler();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!selectedLoan) return null;
 
@@ -37,42 +38,7 @@ const ConfirmModal = () => {
     }
 
     setPhoneError('');
-    setIsProcessing(true);
-
-    // Simulate PayHero STK push and payment processing
-    try {
-      // Show "Check your phone" message
-      setModalState('processing');
-
-      // Simulate API call to PayHero (delay for demo)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // For demo: randomly succeed or fail (90% success rate)
-      const isSuccessful = Math.random() < 0.9;
-
-      if (isSuccessful) {
-        setPaymentData({
-          phone: phoneNumber,
-          status: 'completed',
-        });
-        setModalState('success');
-      } else {
-        setPaymentData({
-          phone: phoneNumber,
-          status: 'failed',
-        });
-        setModalState('failed');
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      setPaymentData({
-        phone: phoneNumber,
-        status: 'failed',
-      });
-      setModalState('failed');
-    } finally {
-      setIsProcessing(false);
-    }
+    await initiatePayment(phoneNumber);
   };
 
   return (
