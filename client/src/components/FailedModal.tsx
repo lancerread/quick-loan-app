@@ -8,31 +8,52 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { XCircle } from 'lucide-react';
 
 const FailedModal = () => {
-  const { modalState, setModalState } = useLoanContext();
+  const { modalState, setModalState, paymentData } = useLoanContext();
 
   return (
     <Dialog open={modalState === 'failed'} onOpenChange={() => setModalState('none')}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
-              <XCircle className="w-12 h-12 text-destructive" />
-            </div>
-          </div>
-          <DialogTitle className="text-2xl text-center">Payment Failed</DialogTitle>
-          <DialogDescription className="text-center text-base">
-            Payment failed or was cancelled. Please ensure your phone number is correct and try again.
+          <DialogTitle className="text-2xl text-destructive">Payment Failed</DialogTitle>
+          <DialogDescription>
+            Unfortunately, your payment could not be processed
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter>
+        <div className="space-y-4 py-4">
+          <div className="flex items-center justify-center p-8 bg-destructive/10 rounded-lg">
+            <div className="text-5xl text-destructive">✕</div>
+          </div>
+
+          <div className="space-y-2 p-4 bg-secondary rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              <strong>Phone Number:</strong> {paymentData.phone}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              <strong>Reason:</strong> Payment declined or timeout
+            </p>
+          </div>
+
+          <p className="text-sm text-muted-foreground text-center">
+            Please check that you entered the correct M-Pesa PIN or try again with a different payment method.
+          </p>
+        </div>
+
+        <DialogFooter className="flex gap-3 sm:gap-3">
           <Button
+            variant="outline"
             onClick={() => setModalState('none')}
-            className="w-full"
-            size="lg"
+            className="flex-1"
+            data-testid="button-back"
+          >
+            Back
+          </Button>
+          <Button
+            onClick={() => setModalState('confirm')}
+            className="flex-1"
+            data-testid="button-retry"
           >
             Try Again
           </Button>

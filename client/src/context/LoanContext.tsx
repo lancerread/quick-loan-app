@@ -13,7 +13,12 @@ interface LoanOption {
   totalRepayment: number;
 }
 
-type ModalState = 'none' | 'confirm' | 'failed';
+type ModalState = 'none' | 'confirm' | 'processing' | 'success' | 'failed';
+
+interface PaymentData {
+  phone: string;
+  status: 'idle' | 'pending' | 'completed' | 'failed';
+}
 
 interface LoanContextType {
   formData: FormData;
@@ -22,6 +27,8 @@ interface LoanContextType {
   setSelectedLoan: (loan: LoanOption | null) => void;
   modalState: ModalState;
   setModalState: (state: ModalState) => void;
+  paymentData: PaymentData;
+  setPaymentData: (data: PaymentData) => void;
 }
 
 const LoanContext = createContext<LoanContextType | undefined>(undefined);
@@ -35,6 +42,10 @@ export const LoanProvider = ({ children }: { children: ReactNode }) => {
   });
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
   const [modalState, setModalState] = useState<ModalState>('none');
+  const [paymentData, setPaymentData] = useState<PaymentData>({
+    phone: '',
+    status: 'idle',
+  });
 
   return (
     <LoanContext.Provider
@@ -45,6 +56,8 @@ export const LoanProvider = ({ children }: { children: ReactNode }) => {
         setSelectedLoan,
         modalState,
         setModalState,
+        paymentData,
+        setPaymentData,
       }}
     >
       {children}
