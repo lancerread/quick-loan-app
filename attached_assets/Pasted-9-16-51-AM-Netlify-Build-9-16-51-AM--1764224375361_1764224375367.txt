@@ -1,0 +1,90 @@
+9:16:51 AM: Netlify Build                                                 
+9:16:51 AM: ────────────────────────────────────────────────────────────────
+9:16:51 AM: ​
+9:16:51 AM: ❯ Version
+9:16:51 AM:   @netlify/build 35.5.2
+9:16:51 AM: ​
+9:16:51 AM: ❯ Flags
+9:16:51 AM:   accountId: 69256ddf251404d527f793da
+9:16:51 AM:   baseRelDir: true
+9:16:51 AM:   buildId: 6927ecc3a72b2174d3945dbc
+9:16:51 AM:   deployId: 6927ecc3a72b2174d3945dbe
+9:16:51 AM: ​
+9:16:51 AM: ❯ Current directory
+9:16:51 AM:   /opt/build/repo
+9:16:51 AM: ​
+9:16:51 AM: ❯ Config file
+9:16:51 AM:   /opt/build/repo/netlify.toml
+9:16:51 AM: ​
+9:16:51 AM: ❯ Context
+9:16:51 AM:   production
+9:16:51 AM: ​
+9:16:51 AM: build.command from netlify.toml                               
+9:16:51 AM: ────────────────────────────────────────────────────────────────
+9:16:51 AM: ​
+9:16:51 AM: $ npm run build
+9:16:51 AM: > vite_react_shadcn_ts@0.0.0 build
+9:16:51 AM: > vite build
+9:16:52 AM: vite v5.4.19 building for production...
+9:16:52 AM: transforming...
+9:16:55 AM: Failed during stage 'building site': Build script returned non-zero exit code: 2
+9:16:54 AM: ✓ 1722 modules transformed.
+9:16:54 AM: rendering chunks...
+9:16:54 AM: computing gzip size...
+9:16:54 AM: dist/index.html                   1.27 kB │ gzip:   0.52 kB
+9:16:54 AM: dist/assets/index-CE4FisKB.css   60.29 kB │ gzip:  10.60 kB
+9:16:54 AM: dist/assets/index-DxzToGxQ.js   369.80 kB │ gzip: 118.02 kB
+9:16:54 AM: ✓ built in 2.55s
+9:16:54 AM: ​
+9:16:54 AM: (build.command completed in 2.9s)
+9:16:54 AM: ​
+9:16:54 AM: Functions bundling                                            
+9:16:54 AM: ────────────────────────────────────────────────────────────────
+9:16:54 AM: ​
+9:16:54 AM: Packaging Functions from netlify/functions directory:
+9:16:54 AM:  - create-payment.cjs
+9:16:54 AM:  - verify-payment.cjs
+9:16:54 AM:  - webhook.cjs
+9:16:54 AM: ​
+9:16:54 AM: ​
+9:16:54 AM: Dependencies installation error                               
+9:16:54 AM: ────────────────────────────────────────────────────────────────
+9:16:54 AM: ​
+9:16:54 AM:   Error message
+9:16:54 AM:   A Netlify Function failed to require one of its dependencies.
+9:16:54 AM:   Please make sure it is present in the site's top-level "package.json".
+​
+9:16:54 AM:   In file "/opt/build/repo/netlify/functions/verify-payment.cjs"
+9:16:54 AM:   Cannot find module 'node-fetch'
+9:16:54 AM:   Require stack:
+9:16:54 AM:   - /opt/buildhome/node-deps/node_modules/@netlify/zip-it-and-ship-it/dist/runtimes/node/bundlers/zisi/resolve.js
+9:16:54 AM: ​
+9:16:54 AM:   Resolved config
+9:16:54 AM:   build:
+9:16:54 AM:     command: npm run build
+9:16:54 AM:     commandOrigin: config
+9:16:54 AM:     environment:
+9:16:54 AM:       - PAYHERO_API_URL
+9:16:54 AM:       - PAYHERO_BASIC_AUTH
+9:16:54 AM:       - PAYHERO_CHANNEL_ID
+9:16:54 AM:       - PAYHERO_NETWORK_CODE
+9:16:54 AM:     publish: /opt/build/repo/dist
+9:16:54 AM:     publishOrigin: config
+9:16:54 AM:   functionsDirectory: /opt/build/repo/netlify/functions
+9:16:54 AM:   headers:
+9:16:55 AM:     - for: /*
+      values:
+        X-Content-Type-Options: nosniff
+        X-Frame-Options: DENY
+    - for: /*.js
+      values:
+        Content-Type: application/javascript; charset=utf-8
+    - for: /assets/*.js
+      values:
+        Content-Type: application/javascript; charset=utf-8
+    - for: /favicon.ico
+      values:
+        Content-Type: image/x-icon
+9:16:55 AM: Build failed due to a user error: Build script returned non-zero exit code: 2
+9:16:55 AM: Failing build: Failed to build site
+9:16:55 AM: Finished processing build request in 17.758s
