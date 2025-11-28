@@ -1,0 +1,71 @@
+netlify dev
+⬥ Injecting environment variable values for all scopes
+⬥ Ignored general context env var: LANG (defined in process)
+⬥ Injected .env file env vars: PAYHERO_API_USERNAME, PAYHERO_API_PASSWORD, PAYHERO_ACCOUNT_ID
+⬥ Setting up local dev server
+
+⬥ Starting Vite dev server
+
+> mpesa-loans-app@0.0.0 dev
+> vite
+
+Port 5000 is in use, trying another one...
+
+  VITE v5.4.19  ready in 435 ms
+
+  ➜  Local:   http://localhost:5001/
+  ➜  Network: http://172.31.124.162:5001/
+✖ Still waiting for server on port 5173 to be ready. Are you sure this is the correct port for Vite? Change this with the targetPort option in your netlify.toml.
+⬥ Netlify Dev could not start or connect to localhost:5173.
+⬥ Please make sure your framework server is running on port 5173
+⬥ If not, you can configure it using the targetPort option in your netlify.toml.
+
+Internal error during "dev.command"                           
+────────────────────────────────────────────────────────────────
+
+  Error message
+  Error: Timed out waiting for port '5173' to be open
+
+  Error location
+  During dev.command
+      at startFrameworkServer (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/dist/utils/framework-server.js:52:23)
+      at async devCommand (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/dist/utils/run-build.js:63:31)
+      at async coreStep (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/get.js:30:13)
+      at async fireCoreStep (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/core_step.js:11:98)
+      at async tFireStep (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/time/main.js:19:63)
+      at async file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/run_step.js:65:296
+      at async pReduce.index (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/run_steps.js:12:362)
+      at async runSteps (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/run_steps.js:11:219)
+      at async runBuild (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/core/build.js:403:142)
+      at async initAndRunBuild (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/core/build.js:309:146)
+
+  Resolved config
+  build:
+    command: npm run build
+    commandOrigin: config
+    publish: /home/runner/workspace/dist
+    publishOrigin: config
+  functions:
+    "*":
+      node_bundler: esbuild
+  functionsDirectory: /home/runner/workspace/netlify/functions
+  redirects:
+    - from: /*
+      status: 200
+      to: /index.html
+  redirectsOrigin: config
+ ›   Error: Could not start local development server
+
+Timed out waiting for port '5173' to be open
+
+Error: Timed out waiting for port '5173' to be open
+    at startFrameworkServer (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/dist/utils/framework-server.js:52:23)
+    at async devCommand (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/dist/utils/run-build.js:63:31)
+    at async coreStep (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/get.js:30:13)
+    at async fireCoreStep (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/core_step.js:11:98)
+    at async tFireStep (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/time/main.js:19:63)
+    at async file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/run_step.js:65:296
+    at async pReduce.index (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/run_steps.js:12:362)
+    at async runSteps (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/steps/run_steps.js:11:219)
+    at async runBuild (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/core/build.js:403:142)
+    at async initAndRunBuild (file:///home/runner/workspace/.config/npm/node_global/lib/node_modules/netlify-cli/node_modules/@netlify/build/lib/core/build.js:309:146)
