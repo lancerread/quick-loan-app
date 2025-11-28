@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useLoanContext } from '../context/LoanContext';
 
 interface PaymentState {
-  merchantRequestId: string;
+  externalReference: string;
   checkoutRequestId: string;
+  merchantRequestId: string;
   status: 'pending' | 'completed' | 'failed';
 }
 
@@ -11,9 +12,22 @@ export const usePaymentHandler = () => {
   const { selectedLoan, setModalState, setPaymentData } = useLoanContext();
   const [paymentState, setPaymentState] = useState<PaymentState | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [lastAttemptTime, setLastAttemptTime] = useState(0);
 
   const initiatePayment = async (phoneNumber: string) => {
     if (!selectedLoan) return;
+
+    // Rate limiting: prevent rapid consecutive attempts
+    const now = Date.now();
+    if (now - lastAttemptTime < 5000) {
+      setPaymentData({
+        phone: phoneNumber,
+        status: 'failed',
+      });
+      setModalState('failed');
+      return;
+    }
+    setLastAttemptTime(now);
 
     setIsProcessing(true);
     setModalState('processing');
@@ -31,19 +45,16 @@ export const usePaymentHandler = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to initiate payment');
-      }
-
       const data = await response.json();
 
-      if (!data.success) {
-        throw new Error(data.responseMessage || 'Payment initiation failed');
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Payment initiation failed');
       }
 
       setPaymentState({
-        merchantRequestId: data.merchantRequestId,
+        externalReference: data.externalReference,
         checkoutRequestId: data.checkoutRequestId,
+        merchantRequestId: data.merchantRequestId,
         status: 'pending',
       });
 
@@ -53,7 +64,12 @@ export const usePaymentHandler = () => {
       });
 
       // Poll for payment status every 5 seconds for 2 minutes
-      pollPaymentStatus(data.merchantRequestId, data.checkoutRequestId, phoneNumber);
+      pollPaymentStatus(
+        data.externalReference,
+        data.checkoutRequestId,
+        data.merchantRequestId,
+        phoneNumber
+      );
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentData({
@@ -66,8 +82,9 @@ export const usePaymentHandler = () => {
   };
 
   const pollPaymentStatus = async (
-    merchantRequestId: string,
+    externalReference: string,
     checkoutRequestId: string,
+    merchantRequestId: string,
     phoneNumber: string
   ) => {
     let pollCount = 0;
@@ -81,44 +98,74 @@ export const usePaymentHandler = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            merchantRequestId,
+            externalReference,
             checkoutRequestId,
+            merchantRequestId,
           }),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to check payment status');
-        }
-
         const data = await response.json();
 
-        if (data.success) {
-          setPaymentState(prev => prev ? { ...prev, status: 'completed' } : null);
-          setPaymentData({
-            phone: phoneNumber,
-            status: 'completed',
-          });
-          setModalState('success');
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to check payment status');
+        }
+
+        // Check if we have a final status
+        if (data.isFinal) {
+          if (data.success) {
+            setPaymentState(prev =>
+              prev ? { ...prev, status: 'completed' } : null
+            );
+            setPaymentData({
+              phone: phoneNumber,
+              status: 'completed',
+            });
+            setModalState('success');
+          } else {
+            setPaymentState(prev =>
+              prev ? { ...prev, status: 'failed' } : null
+            );
+            setPaymentData({
+              phone: phoneNumber,
+              status: 'failed',
+            });
+            setModalState('failed');
+          }
           setIsProcessing(false);
           return;
         }
 
+        // Still pending, continue polling
         pollCount++;
         if (pollCount < maxPolls) {
           setTimeout(poll, 5000);
         } else {
-          // Timeout - assume failure
-          throw new Error('Payment timeout');
+          // Timeout - treat as pending, allow manual check via webhook
+          setPaymentData({
+            phone: phoneNumber,
+            status: 'pending',
+          });
+          setModalState('processing');
+          setIsProcessing(false);
         }
       } catch (error) {
         console.error('Status check error:', error);
-        setPaymentState(prev => prev ? { ...prev, status: 'failed' } : null);
-        setPaymentData({
-          phone: phoneNumber,
-          status: 'failed',
-        });
-        setModalState('failed');
-        setIsProcessing(false);
+        pollCount++;
+        if (pollCount < maxPolls) {
+          // Retry on error
+          setTimeout(poll, 5000);
+        } else {
+          // Max retries exceeded
+          setPaymentState(prev =>
+            prev ? { ...prev, status: 'failed' } : null
+          );
+          setPaymentData({
+            phone: phoneNumber,
+            status: 'failed',
+          });
+          setModalState('failed');
+          setIsProcessing(false);
+        }
       }
     };
 

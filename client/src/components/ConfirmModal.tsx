@@ -22,7 +22,8 @@ const ConfirmModal = () => {
   if (!selectedLoan) return null;
 
   const validatePhone = (phone: string): boolean => {
-    const phoneRegex = /^(\+254|0)[0-9]{9}$/;
+    // Validate local format: 07... or 01... (10 digits total)
+    const phoneRegex = /^0[71]\d{8}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
 
@@ -33,7 +34,7 @@ const ConfirmModal = () => {
     }
 
     if (!validatePhone(phoneNumber)) {
-      setPhoneError('Please enter a valid M-Pesa phone number (e.g., 0712345678)');
+      setPhoneError('Please enter a valid M-Pesa phone number (e.g., 0712345678 or 0112345678)');
       return;
     }
 

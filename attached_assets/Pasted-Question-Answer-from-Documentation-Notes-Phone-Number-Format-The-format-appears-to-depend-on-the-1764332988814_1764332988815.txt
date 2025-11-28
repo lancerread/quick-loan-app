@@ -1,0 +1,160 @@
+Question
+Answer from Documentation
+Notes
+Phone Number Format
+The format appears to depend on the API endpoint:
+Initiate MPESA STK Push (/api/v2/payments)
+Example uses local format: 0787677676.
+Use 07... or 01... for local numbers.
+Wallet Withdraw to Mobile (/api/v2/withdraw)
+Requires international format without +: 254787677676. The documentation explicitly states: "phone_number must start with country code (e.g., 254 for Kenya)".
+Use 254... for B2C/Withdrawal endpoints.
+Sandbox vs Production
+Should we test with PayHero sandbox first?
+Yes. The documentation encourages testing: "New developer accounts can request up to 300 KES in test service tokens/credits for free to explore our API endpoints and perform end-to-end integrations before going live."
+This confirms a testing environment is available.
+What's the URL for production API?
+The base URL used in all API examples is https://backend.payhero.co.ke/api/v2/.
+This is the likely production URL. The documentation does not specify a separate sandbox URL, suggesting the environment is controlled by your API credentials.
+Success/Failure Indicators
+What response code indicates successful payment?
+For Initiate MPESA STK Push and Service Wallet Top Up, a successful request returns 201 Created with a JSON body indicating "status": "QUEUED".
+This means the request was successfully submitted to M-Pesa.
+What codes indicate failure or pending?
+The Get Transaction Status endpoint returns a status field with possible values: SUCCESS, QUEUED, and FAILED.
+The initial request failure is indicated by a 400 Bad Request or other HTTP error.
+Payment Polling & Timeouts
+Question
+Answer from Documentation
+Notes
+Status Check Duration
+The documentation does not specify recommended polling intervals or maximum duration.
+Best Practice: Your current setup of polling every 5 seconds for 2 minutes max is a standard, safe approach for M-Pesa STK Push transactions.
+What happens if payment status is "pending" after 2 minutes?
+The documentation only lists QUEUED, SUCCESS, and FAILED as statuses.
+Best Practice: If the status is still QUEUED after 2 minutes, it is generally safest to treat it as failed for the current session and allow the user to check manually later using the transaction reference, or rely on the webhook for a delayed update.
+Error Handling & Validation
+Question
+Answer from Documentation
+Notes
+Phone Validation
+Yes. Given the different format requirements for STK Push (07... ) and Withdrawals (254...), you should validate the phone number format on your end before sending the request to PayHero to prevent a 400 Bad Request error.
+Error Messages
+The documentation shows a generic 400 Bad Request response with "error_message": "Invalid request".
+Best Practice: You should not show raw PayHero error messages to the user. Instead, provide a generic, user-friendly message (e.g., "Payment could not be initiated. Please check your phone number and try again.") and log the raw error for debugging.
+Retry Logic
+The documentation does not specify a retry policy.
+Best Practice: Allow users to retry immediately if the failure was due to a client-side error (e.g., invalid phone number). If the failure is due to a server-side or network issue, a short delay (e.g., 30 seconds) before retrying is advisable.
+Webhooks & Callbacks
+Question
+Answer from Documentation
+Notes
+Callback Endpoint
+Yes. The Initiate MPESA STK Push API supports a callback_url parameter, and the Payment Callback section details the JSON payload that will be sent to your server.
+You should implement a webhook endpoint (e.g., netlify/functions/webhook.ts) to receive the final payment status.
+Do we need to store payment records for webhook callbacks?
+Yes. The callback payload contains the ExternalReference you provided, which is essential for matching the callback to your internal payment record.
+You must store the initial payment request details (including the ExternalReference) to process the incoming webhook.
+Verification
+The documentation does not explicitly mention signature validation for webhooks.
+Best Practice: You should always verify webhook authenticity if PayHero provides a mechanism (e.g., a secret key or signature header). If no mechanism is documented, you should at least verify the transaction details against your own records.
+User Experience
+Question
+Answer from Documentation
+Notes
+Payment Confirmation
+The Payment Callback payload includes the MpesaReceiptNumber and the Status: "Success".
+Best Practice: After a successful payment, you should show the M-Pesa receipt number to the user. The provision of a downloadable loan agreement is a business logic decision for your application, not a PayHero requirement.
+Failed Payments
+The Get Transaction Status endpoint returns status: "FAILED".
+Best Practice: Users should see a clear message that the payment failed. You should not show the raw PayHero error message. Provide an option to retry and support contact information.
+Deployment & Testing
+Question
+Answer from Documentation
+Notes
+Testing Requirement
+The documentation confirms the availability of test credits for end-to-end integration.
+Best Practice: You should only test with the PayHero sandbox until you are ready for production. Once in production, you should perform a few small-value test payments with real M-Pesa to confirm the live integration is working correctly.
+Security
+Question
+Answer from Documentation
+Notes
+Rate Limiting
+The documentation does not mention rate limiting.
+Best Practice: Yes, you should implement rate limiting on your application side to prevent abuse (e.g., limit STK Push attempts per phone number or IP address per minute).
+CORS
+The documentation does not cover CORS for Netlify Functions.
+Best Practice: Yes, Netlify Functions should only accept requests from your app's domain to prevent cross-site request forgery (CSRF) and other security vulnerabilities.
+Till Number Setup
+The documentation confirms that PayHero supports integration with your existing MPESA Till Number or Paybill Number.
+You would use the POST /api/v2/payment_channels endpoint to register your existing Till Number as a payment channel.
+The request body requires your Pay Hero account_id, the Till Number as the short_code, and channel_type: "till".
+Once registered, you will use the returned channel_id in your Initiate MPESA STK Push requests.
+Let me know if you have any other questions.
+PayHero Developer Documentation Summary
+This document summarizes the key features and API endpoints of the PayHero Developer Documentation, reviewed on November 28, 2025.
+1. Getting Started
+Topic
+Key Information
+API/Link
+Account Creation
+Sign up at the Pay Hero sign-up page to receive a unique account ID and API credentials.
+https://app.payhero.co.ke
+Authorization
+Uses Basic Authentication. The API token must be included in the Authorization header of every request as Authorization: Basic YOUR_AUTH_TOKEN.
+/docs/authorization
+2. Payment Channels
+PayHero allows integration with MPESA Till Number, Paybill Number, or Bank Account.
+Endpoint
+Method
+Description
+/api/v2/payment_channels
+GET
+Retrieve all registered payment channels. Supports filtering by is_active.
+/api/v2/payment_channels
+POST
+Register a new payment channel (paybill, till, or bank). Requires channel_type, account_id, short_code, account_number, and description.
+/api/v2/bank_paybills
+GET
+Fetch a list of Pay Hero registered bank paybills for reference.
+3. Payments
+Feature
+Endpoint/Method
+Key Parameters/Details
+Initiate MPESA STK Push
+POST /api/v2/payments
+Requires amount, phone_number, channel_id, and provider (e.g., m-pesa). Supports optional external_reference and callback_url.
+Payment Button
+JavaScript SDK integration.
+Widget to embed a payment button on a website. Requires a paymentUrl (Lipwa link), channelID, amount, buttonName, and buttonColor. Supports successUrl, failedUrl, and callbackUrl.
+Lipwa Link
+Customizable URL.
+A unique payment link for receiving payments. Parameters like amount, phone, name, channel_id, reference, success_url, and failed_url can be appended to pre-fill the payment form.
+Payment Callback
+POST to your server.
+Webhook sent to the configured callback_url upon payment processing. Contains transaction details, including ExternalReference and CheckoutRequestID.
+4. Wallets
+PayHero manages two types of wallets: Payments Wallet and Service Wallet.
+Endpoint
+Method
+Description
+/api/v2/payment_channels/{channel_id}
+GET
+Query the balance of a Payments Wallet.
+/api/v2/wallets?wallet_type=service_wallet
+GET
+Query the balance of the Service Wallet.
+/api/v2/topup
+POST
+Top up the Service Wallet. Initiates an MPESA STK Push to the provided phone_number.
+/api/v2/withdraw
+POST
+Withdraw funds from the Pay Hero wallet to mobile money (MPESA/Airtel Money). Requires amount, phone_number, network_code (63902 for MPESA, 63903 for Airtel Money), and channel.
+5. Transactions
+Endpoint
+Method
+Description
+/api/v2/transaction-status
+`GE
+Task completed
+How was this result?

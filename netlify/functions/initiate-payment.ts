@@ -1,50 +1,73 @@
-import { Handler } from '@netlify/functions';
+const PAYHERO_BASE_URL = 'https://backend.payhero.co.ke/api/v2';
 
-const PAYHERO_BASE_URL = 'https://sandbox.payhero.co/api/v2';
+interface PaymentRequest {
+  phoneNumber: string;
+  amount: number;
+  description: string;
+}
 
-const handler: Handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' }),
-    };
+export default async (req: Request) => {
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
+    const body: PaymentRequest = await req.json();
     const { phoneNumber, amount, description } = body;
 
     if (!phoneNumber || !amount) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required fields' }),
-      };
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate phone format (07... or 01...)
+    if (!/^0[71]\d{8}$/.test(phoneNumber.replace(/\s/g, ''))) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid phone number. Please use format 0712345678 or 0112345678' 
+        }), 
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const apiUsername = process.env.PAYHERO_API_USERNAME;
     const apiPassword = process.env.PAYHERO_API_PASSWORD;
-    const accountId = process.env.PAYHERO_ACCOUNT_ID;
+    const channelId = process.env.PAYHERO_CHANNEL_ID;
 
-    if (!apiUsername || !apiPassword || !accountId) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'PayHero credentials not configured' }),
-      };
+    if (!apiUsername || !apiPassword || !channelId) {
+      return new Response(
+        JSON.stringify({ error: 'PayHero credentials not configured' }), 
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const credentials = `${apiUsername}:${apiPassword}`;
     const basicAuth = Buffer.from(credentials).toString('base64');
 
+    const externalReference = `REF-${Date.now()}`;
+
     const payload = {
-      phone: phoneNumber,
       amount: amount,
-      account_id: accountId,
-      merchant_reference: `REF-${Date.now()}`,
-      narration: description || 'M-Pesa Loan Processing Fee',
+      phone_number: phoneNumber,
+      channel_id: channelId,
+      provider: 'm-pesa',
+      external_reference: externalReference,
       callback_url: `${process.env.URL || 'http://localhost:5000'}/.netlify/functions/webhook`,
+      narration: description || 'M-Pesa Loan Processing Fee',
     };
 
-    const response = await fetch(`${PAYHERO_BASE_URL}/mpesa_request`, {
+    const response = await fetch(`${PAYHERO_BASE_URL}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,38 +76,46 @@ const handler: Handler = async (event) => {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('PayHero error:', errorText);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ 
-          error: `PayHero API error: ${response.status}`,
-          details: errorText 
-        }),
-      };
+    const data = await response.json();
+
+    if (!response.ok || response.status !== 201) {
+      console.error('PayHero error:', data);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Payment could not be initiated. Please check your phone number and try again.' 
+        }), 
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    const data = await response.json();
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
+    // Store transaction reference in a simple way (in production, use a database)
+    // For now, we'll rely on webhook callbacks
+    return new Response(
+      JSON.stringify({
         success: true,
-        merchantRequestId: data.merchant_request_id,
         checkoutRequestId: data.checkout_request_id,
-        responseCode: data.response_code,
-        responseMessage: data.response_message,
+        merchantRequestId: data.merchant_request_id,
+        externalReference: externalReference,
+        status: data.status,
       }),
-    };
+      { 
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
     console.error('Payment error:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Payment initiation failed' 
+    return new Response(
+      JSON.stringify({ 
+        error: 'Payment initiation failed. Please try again.' 
       }),
-    };
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 };
-
-export { handler };

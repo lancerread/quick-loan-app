@@ -1,47 +1,54 @@
-import { Handler } from '@netlify/functions';
+const PAYHERO_BASE_URL = 'https://backend.payhero.co.ke/api/v2';
 
-const PAYHERO_BASE_URL = 'https://sandbox.payhero.co/api/v2';
+interface StatusCheckRequest {
+  checkoutRequestId: string;
+  merchantRequestId: string;
+  externalReference: string;
+}
 
-const handler: Handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' }),
-    };
+export default async (req: Request) => {
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
-    const { merchantRequestId, checkoutRequestId } = body;
+    const body: StatusCheckRequest = await req.json();
+    const { externalReference } = body;
 
-    if (!merchantRequestId || !checkoutRequestId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required fields' }),
-      };
+    if (!externalReference) {
+      return new Response(
+        JSON.stringify({ error: 'Missing external reference' }), 
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const apiUsername = process.env.PAYHERO_API_USERNAME;
     const apiPassword = process.env.PAYHERO_API_PASSWORD;
-    const accountId = process.env.PAYHERO_ACCOUNT_ID;
 
-    if (!apiUsername || !apiPassword || !accountId) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'PayHero credentials not configured' }),
-      };
+    if (!apiUsername || !apiPassword) {
+      return new Response(
+        JSON.stringify({ error: 'PayHero credentials not configured' }), 
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const credentials = `${apiUsername}:${apiPassword}`;
     const basicAuth = Buffer.from(credentials).toString('base64');
 
     const payload = {
-      merchant_request_id: merchantRequestId,
-      checkout_request_id: checkoutRequestId,
-      account_id: accountId,
+      external_reference: externalReference,
     };
 
-    const response = await fetch(`${PAYHERO_BASE_URL}/mpesa_request_status`, {
+    const response = await fetch(`${PAYHERO_BASE_URL}/transaction-status`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,38 +57,48 @@ const handler: Handler = async (event) => {
       body: JSON.stringify(payload),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('PayHero error:', errorText);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ 
-          error: `PayHero API error: ${response.status}` 
+      console.error('PayHero status check error:', data);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Could not check payment status. Please try again.' 
         }),
-      };
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    const data = await response.json();
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        success: data.status === 'success' || data.response_code === '0',
+    // PayHero returns status: "SUCCESS", "QUEUED", or "FAILED"
+    const isSuccess = data.status === 'SUCCESS';
+    const isFailed = data.status === 'FAILED';
+
+    return new Response(
+      JSON.stringify({
+        success: isSuccess,
         status: data.status,
-        responseCode: data.response_code,
-        responseMessage: data.response_message,
+        mpesaReceiptNumber: data.mpesa_receipt_number || null,
         amount: data.amount,
-        mpesaReceiptNumber: data.mpesa_receipt_number,
+        isFinal: isSuccess || isFailed, // Indicates if polling should stop
       }),
-    };
+      { 
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
     console.error('Status check error:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Status check failed' 
+    return new Response(
+      JSON.stringify({ 
+        error: 'Status check failed. Please try again.' 
       }),
-    };
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 };
-
-export { handler };
