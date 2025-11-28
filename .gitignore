@@ -31,3 +31,6 @@ dist-ssr
 # Replit specific
 .replit
 replit.nix
+
+# Local Netlify folder
+.netlify
