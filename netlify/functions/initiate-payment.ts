@@ -52,6 +52,13 @@ export default async (req: Request) => {
       );
     }
 
+    console.log('🔐 [PAYMENT] Credentials check:', {
+      hasUsername: !!apiUsername,
+      hasPassword: !!apiPassword,
+      hasChannelId: !!channelId,
+      channelId: channelId,
+    });
+
     const credentials = `${apiUsername}:${apiPassword}`;
     const basicAuth = Buffer.from(credentials).toString('base64');
 
@@ -67,6 +74,18 @@ export default async (req: Request) => {
       narration: description || 'M-Pesa Loan Processing Fee',
     };
 
+    console.log('📤 [PAYMENT] Sending request to PayHero:', {
+      url: `${PAYHERO_BASE_URL}/payments`,
+      payload: {
+        amount: payload.amount,
+        phone_number: payload.phone_number,
+        channel_id: payload.channel_id,
+        provider: payload.provider,
+        external_reference: payload.external_reference,
+        narration: payload.narration,
+      },
+    });
+
     const response = await fetch(`${PAYHERO_BASE_URL}/payments`, {
       method: 'POST',
       headers: {
@@ -76,13 +95,26 @@ export default async (req: Request) => {
       body: JSON.stringify(payload),
     });
 
+    console.log('📥 [PAYMENT] Response received from PayHero:', {
+      status: response.status,
+      statusText: response.statusText,
+    });
+
     const data = await response.json();
 
+    console.log('📋 [PAYMENT] PayHero response body:', JSON.stringify(data, null, 2));
+
     if (!response.ok || response.status !== 201) {
-      console.error('PayHero error:', data);
+      console.error('❌ [PAYMENT] PayHero error response:', {
+        statusCode: response.status,
+        statusText: response.statusText,
+        errorData: data,
+        message: data.message || data.error || 'Unknown error',
+      });
       return new Response(
         JSON.stringify({ 
-          error: 'Payment could not be initiated. Please check your phone number and try again.' 
+          error: data.message || data.error || 'Payment could not be initiated. Please check your phone number and try again.',
+          details: data,
         }), 
         { 
           status: 400,
@@ -90,6 +122,12 @@ export default async (req: Request) => {
         }
       );
     }
+
+    console.log('✅ [PAYMENT] Payment initiated successfully:', {
+      externalReference: externalReference,
+      checkoutRequestId: data.checkout_request_id,
+      merchantRequestId: data.merchant_request_id,
+    });
 
     // Store transaction reference in a simple way (in production, use a database)
     // For now, we'll rely on webhook callbacks
@@ -107,10 +145,14 @@ export default async (req: Request) => {
       }
     );
   } catch (error) {
-    console.error('Payment error:', error);
+    console.error('❌ [PAYMENT] Unexpected error:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return new Response(
       JSON.stringify({ 
-        error: 'Payment initiation failed. Please try again.' 
+        error: error instanceof Error ? error.message : 'Payment initiation failed. Please try again.',
+        details: String(error),
       }),
       { 
         status: 500,

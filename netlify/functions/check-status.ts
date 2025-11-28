@@ -48,6 +48,11 @@ export default async (req: Request) => {
       external_reference: externalReference,
     };
 
+    console.log('🔍 [STATUS] Checking payment status:', {
+      externalReference: externalReference,
+      url: `${PAYHERO_BASE_URL}/transaction-status`,
+    });
+
     const response = await fetch(`${PAYHERO_BASE_URL}/transaction-status`, {
       method: 'POST',
       headers: {
@@ -57,13 +62,24 @@ export default async (req: Request) => {
       body: JSON.stringify(payload),
     });
 
+    console.log('📥 [STATUS] Response received:', {
+      status: response.status,
+      statusText: response.statusText,
+    });
+
     const data = await response.json();
 
+    console.log('📋 [STATUS] PayHero status response:', JSON.stringify(data, null, 2));
+
     if (!response.ok) {
-      console.error('PayHero status check error:', data);
+      console.error('❌ [STATUS] PayHero error:', {
+        statusCode: response.status,
+        errorData: data,
+      });
       return new Response(
         JSON.stringify({ 
-          error: 'Could not check payment status. Please try again.' 
+          error: 'Could not check payment status. Please try again.',
+          details: data,
         }),
         { 
           status: 400,
@@ -75,6 +91,12 @@ export default async (req: Request) => {
     // PayHero returns status: "SUCCESS", "QUEUED", or "FAILED"
     const isSuccess = data.status === 'SUCCESS';
     const isFailed = data.status === 'FAILED';
+
+    console.log(`📊 [STATUS] Payment status: ${data.status}`, {
+      isSuccess,
+      isFailed,
+      mpesaReceipt: data.mpesa_receipt_number,
+    });
 
     return new Response(
       JSON.stringify({
@@ -90,10 +112,14 @@ export default async (req: Request) => {
       }
     );
   } catch (error) {
-    console.error('Status check error:', error);
+    console.error('❌ [STATUS] Unexpected error:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return new Response(
       JSON.stringify({ 
-        error: 'Status check failed. Please try again.' 
+        error: 'Status check failed. Please try again.',
+        details: error instanceof Error ? error.message : String(error),
       }),
       { 
         status: 500,

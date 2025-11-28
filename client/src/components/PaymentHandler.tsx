@@ -47,9 +47,19 @@ export const usePaymentHandler = () => {
 
       const data = await response.json();
 
+      console.log('📱 [CLIENT] Payment initiation response:', {
+        ok: response.ok,
+        status: response.status,
+        data: data,
+      });
+
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Payment initiation failed');
+        const errorMessage = data.error || data.details?.message || 'Payment initiation failed';
+        console.error('❌ [CLIENT] Payment initiation error:', errorMessage);
+        throw new Error(errorMessage);
       }
+
+      console.log('✅ [CLIENT] Payment initiated, starting status polling...');
 
       setPaymentState({
         externalReference: data.externalReference,
@@ -71,10 +81,15 @@ export const usePaymentHandler = () => {
         phoneNumber
       );
     } catch (error) {
-      console.error('Payment error:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('❌ [CLIENT] Payment initiation failed:', {
+        message: errorMessage,
+        error: error,
+      });
       setPaymentData({
         phone: phoneNumber,
         status: 'failed',
+        errorMessage: errorMessage,
       });
       setModalState('failed');
       setIsProcessing(false);
@@ -106,8 +121,16 @@ export const usePaymentHandler = () => {
 
         const data = await response.json();
 
+        console.log(`📊 [CLIENT] Status poll #${pollCount}:`, {
+          status: data.status,
+          isFinal: data.isFinal,
+          data: data,
+        });
+
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to check payment status');
+          const errorMessage = data.error || data.details?.message || 'Failed to check payment status';
+          console.error('❌ [CLIENT] Status check error:', errorMessage);
+          throw new Error(errorMessage);
         }
 
         // Check if we have a final status
@@ -149,7 +172,11 @@ export const usePaymentHandler = () => {
           setIsProcessing(false);
         }
       } catch (error) {
-        console.error('Status check error:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`❌ [CLIENT] Status check error on poll #${pollCount}:`, {
+          message: errorMessage,
+          error: error,
+        });
         pollCount++;
         if (pollCount < maxPolls) {
           // Retry on error
