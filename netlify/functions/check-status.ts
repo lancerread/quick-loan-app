@@ -1,9 +1,7 @@
 const PAYHERO_BASE_URL = 'https://backend.payhero.co.ke/api/v2';
 
 interface StatusCheckRequest {
-  checkoutRequestId: string;
-  merchantRequestId: string;
-  externalReference: string;
+  reference: string;
 }
 
 export default async (req: Request) => {
@@ -16,11 +14,11 @@ export default async (req: Request) => {
 
   try {
     const body: StatusCheckRequest = await req.json();
-    const { externalReference } = body;
+    const { reference } = body;
 
-    if (!externalReference) {
+    if (!reference) {
       return new Response(
-        JSON.stringify({ error: 'Missing external reference' }), 
+        JSON.stringify({ error: 'Missing transaction reference' }), 
         { 
           status: 400,
           headers: { 'Content-Type': 'application/json' }
@@ -44,22 +42,18 @@ export default async (req: Request) => {
     const credentials = `${apiUsername}:${apiPassword}`;
     const basicAuth = Buffer.from(credentials).toString('base64');
 
-    const payload = {
-      external_reference: externalReference,
-    };
+    const statusUrl = `${PAYHERO_BASE_URL}/transaction-status?reference=${encodeURIComponent(reference)}`;
 
     console.log('🔍 [STATUS] Checking payment status:', {
-      externalReference: externalReference,
-      url: `${PAYHERO_BASE_URL}/transaction-status`,
+      reference: reference,
+      url: statusUrl,
     });
 
-    const response = await fetch(`${PAYHERO_BASE_URL}/transaction-status`, {
-      method: 'POST',
+    const response = await fetch(statusUrl, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Basic ${basicAuth}`,
       },
-      body: JSON.stringify(payload),
     });
 
     console.log('📥 [STATUS] Response received:', {

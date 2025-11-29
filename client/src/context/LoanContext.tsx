@@ -18,6 +18,7 @@ type ModalState = 'none' | 'confirm' | 'processing' | 'success' | 'failed';
 interface PaymentData {
   phone: string;
   status: 'idle' | 'pending' | 'completed' | 'failed';
+  errorMessage?: string;
 }
 
 interface LoanContextType {
