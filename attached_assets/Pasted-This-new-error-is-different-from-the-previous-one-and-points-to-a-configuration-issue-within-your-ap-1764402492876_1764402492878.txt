@@ -1,0 +1,36 @@
+This new error is different from the previous one and points to a configuration issue within your application's Netlify Function, specifically related to the PayHero Payment Channel ID.
+Analysis of the Error
+The error is coming from your Netlify Function (initiate-payment) which then calls the PayHero API.
+Detail
+Value
+Explanation
+Error Code
+NOT_FOUND (404)
+This is a critical clue. A 404 Not Found often means the API could not find a resource you referenced.
+Error Message
+"sql: no rows in result set"
+This is a database error message from the PayHero backend, indicating that a database query returned no results.
+Context
+You are trying to initiate a payment.
+The most likely resource that could not be found is the Payment Channel (your registered Till number).
+The Problem: Missing channel_id
+When you initiate an M-Pesa STK Push via the PayHero API (POST /api/v2/payments), the request body must include the channel_id of the Till or Paybill you want to receive the payment.
+The documentation states the required parameters for STK Push include:
+amount
+phone_number
+channel_id (Your registered payment channel ID)
+provider
+Your request payload is:
+JSON
+{
+  "phoneNumber": "0728504715",
+  "amount": 50,
+  "description": "M-Pesa Loan Processing Fee - KSh 50"
+}
+This payload is missing the channel_id and provider fields that the PayHero API requires.
+The sql: no rows in result set error likely means your Netlify Function is trying to look up the channel_id from a configuration or database but failing, or it's not including it in the final request to PayHero, causing PayHero to return a 404 because it doesn't know which channel to use.
+Action Plan
+You need to ensure your Netlify Function is correctly configured to include the channel_id for your registered Till number.
+Find Your channel_id:
+When you successfully registered your Till number (4049294), the API response contained a unique id. This is your channel_id.
+If you don't have it, you can retrieve it by calling the GET /api/v2/payment_channels endpoint.
