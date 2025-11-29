@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useLoanContext } from '../context/LoanContext';
 import { usePaymentHandler } from './PaymentHandler';
 import {
@@ -10,36 +9,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 const ConfirmModal = () => {
   const { selectedLoan, modalState, setModalState, formData, paymentData } = useLoanContext();
   const { initiatePayment, isProcessing } = usePaymentHandler();
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneError, setPhoneError] = useState('');
 
   if (!selectedLoan) return null;
 
-  const validatePhone = (phone: string): boolean => {
-    // Validate local format: 07... or 01... (10 digits total)
-    const phoneRegex = /^0[71]\d{8}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ''));
-  };
-
   const handleProceed = async () => {
-    if (!phoneNumber.trim()) {
-      setPhoneError('Phone number is required');
-      return;
-    }
-
-    if (!validatePhone(phoneNumber)) {
-      setPhoneError('Please enter a valid M-Pesa phone number (e.g., 0712345678 or 0112345678)');
-      return;
-    }
-
-    setPhoneError('');
-    await initiatePayment(phoneNumber);
+    await initiatePayment(formData.phone);
   };
 
   return (
@@ -82,28 +60,10 @@ const ConfirmModal = () => {
               </p>
             </div>
 
-            <div className="pt-4">
-              <Label htmlFor="mpesamobile">M-Pesa Phone Number</Label>
-              <Input
-                id="mpesamobile"
-                type="tel"
-                placeholder="0712345678 or +254712345678"
-                value={phoneNumber}
-                onChange={(e) => {
-                  setPhoneNumber(e.target.value);
-                  setPhoneError('');
-                }}
-                disabled={isProcessing}
-                className={phoneError ? 'border-destructive' : ''}
-                data-testid="input-phone-confirm"
-              />
-              {phoneError && (
-                <p className="text-sm text-destructive mt-1" data-testid="error-phone-confirm">
-                  {phoneError}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground mt-2">
-                You'll receive an M-Pesa STK prompt to enter your PIN
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">Payment will be sent to:</p>
+              <p className="text-lg font-semibold text-foreground" data-testid="text-phone-confirm">
+                {formData.phone}
               </p>
             </div>
           </div>
@@ -111,11 +71,7 @@ const ConfirmModal = () => {
           <DialogFooter className="flex gap-3 sm:gap-3">
             <Button
               variant="outline"
-              onClick={() => {
-                setModalState('none');
-                setPhoneNumber('');
-                setPhoneError('');
-              }}
+              onClick={() => setModalState('none')}
               className="flex-1"
               disabled={isProcessing}
               data-testid="button-cancel-confirm"
@@ -125,7 +81,7 @@ const ConfirmModal = () => {
             <Button
               onClick={handleProceed}
               className="flex-1"
-              disabled={isProcessing || !phoneNumber.trim()}
+              disabled={isProcessing}
               data-testid="button-proceed-payment"
             >
               {isProcessing ? 'Processing...' : 'Proceed'}
@@ -201,10 +157,7 @@ const ConfirmModal = () => {
 
           <DialogFooter>
             <Button
-              onClick={() => {
-                setModalState('none');
-                setPhoneNumber('');
-              }}
+              onClick={() => setModalState('none')}
               className="w-full"
               data-testid="button-done"
             >
