@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useLoanContext } from '@/context/LoanContext';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,11 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 
 const EligibilityPage = () => {
   const [, setLocation] = useLocation();
   const { setFormData } = useLoanContext();
+  const { toast } = useToast();
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -24,6 +26,7 @@ const EligibilityPage = () => {
     loanType: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -57,11 +60,25 @@ const EligibilityPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
+      setIsLoading(true);
+      
+      // Simulate validation processing
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Show success toast
+      toast({
+        title: "Eligibility Check Passed!",
+        description: "You're ready to select a loan amount. Redirecting now...",
+      });
+      
       setFormData(form);
+      
+      // Small delay for toast visibility before navigation
+      await new Promise(resolve => setTimeout(resolve, 800));
       setLocation('/apply');
     }
   };
@@ -98,6 +115,7 @@ const EligibilityPage = () => {
                 placeholder="Enter your full name"
                 value={form.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
+                disabled={isLoading}
                 className={errors.name ? 'border-destructive' : ''}
                 data-testid="input-name"
               />
@@ -114,6 +132,7 @@ const EligibilityPage = () => {
                 placeholder="0712345678"
                 value={form.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
+                disabled={isLoading}
                 className={errors.phone ? 'border-destructive' : ''}
                 data-testid="input-phone"
               />
@@ -130,6 +149,7 @@ const EligibilityPage = () => {
                 placeholder="Enter your ID number"
                 value={form.idNumber}
                 onChange={(e) => handleInputChange('idNumber', e.target.value)}
+                disabled={isLoading}
                 className={errors.idNumber ? 'border-destructive' : ''}
                 data-testid="input-id-number"
               />
@@ -143,6 +163,7 @@ const EligibilityPage = () => {
               <Select
                 value={form.loanType}
                 onValueChange={(value) => handleInputChange('loanType', value)}
+                disabled={isLoading}
               >
                 <SelectTrigger className={errors.loanType ? 'border-destructive' : ''} data-testid="select-loan-type">
                   <SelectValue placeholder="Select loan type" />
@@ -159,8 +180,21 @@ const EligibilityPage = () => {
               )}
             </div>
 
-            <Button type="submit" className="w-full" size="lg" data-testid="button-continue">
-              Continue to Loan Selection
+            <Button 
+              type="submit" 
+              className="w-full" 
+              size="lg" 
+              disabled={isLoading}
+              data-testid="button-continue"
+            >
+              {isLoading ? (
+                <>
+                  <span className="inline-block animate-spin mr-2">⏳</span>
+                  Checking Eligibility...
+                </>
+              ) : (
+                'Continue to Loan Selection'
+              )}
             </Button>
           </form>
         </Card>
