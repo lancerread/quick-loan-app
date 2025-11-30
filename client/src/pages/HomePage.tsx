@@ -33,6 +33,15 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <section className="py-8 px-4 sm:px-6 lg:px-8 flex justify-center">
+        <img
+          src="https://res.cloudinary.com/dshdig88v/image/upload/v1764497795/Nyota-768x528-1_g504z5.webp"
+          alt="Nyota Logo"
+          className="h-24 sm:h-32 md:h-40 w-auto object-contain"
+          data-testid="img-logo"
+        />
+      </section>
+
       <section className="relative overflow-hidden bg-gradient-hero py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-primary-foreground mb-6" data-testid="text-hero-title">
