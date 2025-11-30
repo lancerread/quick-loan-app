@@ -9,12 +9,10 @@ interface SuccessNotification {
 
 const KENYAN_NAMES = [
   // Kikuyu
-  'James Mwangi',
-  'Grace Kamau',
   'Samuel Kariuki',
   'Elizabeth Nyambura',
-  'Daniel Kimani',
-  'Agnes Maina',
+  // 'Daniel Kimani',
+  // 'Agnes Maina',
   'Peter Kiptanui',
   'Ruth Wanjiru',
   // Luhya
@@ -25,11 +23,11 @@ const KENYAN_NAMES = [
   'Moses Wafula',
   'Caroline Nabwire',
   // Kalenjin
-  'Joseph Kiplagat',
-  'Michael Kipkemei',
-  'Robert Kipkemboi',
-  'Susan Kipchoge',
-  'Paul Kiprotich',
+  // 'Joseph Kiplagat',
+  // 'Michael Kipkemei',
+  // 'Robert Kipkemboi',
+  'Susan Chebet',
+  // 'Paul Kiprotich',
   // Maasai
   'Benjamin Lesilau',
   'Mercy Koech',
