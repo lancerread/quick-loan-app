@@ -46,28 +46,28 @@ const ApplyPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-background py-6 px-3 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
         <Button
           variant="ghost"
           onClick={() => setLocation('/eligibility')}
-          className="mb-6"
+          className="mb-4"
           data-testid="button-back"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <Card className="p-6 sm:p-8 shadow-elevated mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2" data-testid="text-welcome">
+        <Card className="p-4 sm:p-6 shadow-elevated mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1" data-testid="text-welcome">
             Hi {formData.name}!
           </h1>
-          <p className="text-muted-foreground">
-            Select your desired loan amount below
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Select your loan amount
           </p>
         </Card>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
           {loanOptions.map((loan, index) => (
             <LoanCard
               key={index}
