@@ -8,26 +8,48 @@ interface SuccessNotification {
 }
 
 const KENYAN_NAMES = [
+  // Kikuyu
   'James Mwangi',
   'Grace Kamau',
-  'David Ochieng',
-  'Ruth Kipchoge',
   'Samuel Kariuki',
   'Elizabeth Nyambura',
-  'Joseph Kiplagat',
-  'Mercy Koech',
-  'Michael Kipkemei',
-  'Patricia Ngeny',
   'Daniel Kimani',
-  'Susan Kipchoge',
-  'Peter Kipchoge',
   'Agnes Maina',
-  'John Kipchoge',
+  'Peter Kiptanui',
+  'Ruth Wanjiru',
+  // Luhya
+  'David Ochieng',
   'Lucy Omondi',
-  'Paul Kiplagat',
-  'Martha Kipchoge',
-  'Robert Kipkemei',
-  'Faith Kiplagat',
+  'George Simiyu',
+  'Faith Masakhalia',
+  'Moses Wafula',
+  'Caroline Nabwire',
+  // Kalenjin
+  'Joseph Kiplagat',
+  'Michael Kipkemei',
+  'Robert Kipkemboi',
+  'Susan Kipchoge',
+  'Paul Kiprotich',
+  // Maasai
+  'Benjamin Lesilau',
+  'Mercy Koech',
+  'Thomas Lengusaya',
+  'Emma Koech',
+  // Kamba
+  'Simon Muema',
+  'Patricia Mutua',
+  'Hassan Mwangi',
+  // Coastal/Swahili
+  'Omar Hassan',
+  'Amina Abdullah',
+  'Ibrahim Daud',
+  'Zainab Mohamed',
+  // Somali
+  'Ali Ibrahim',
+  'Hana Mohamed',
+  // Borana
+  'Getnet Abebe',
+  'Negash Kasso',
 ];
 
 const LOAN_AMOUNTS = [5500, 6800, 7800, 9800, 11200, 16800, 21200, 25600, 30000];
