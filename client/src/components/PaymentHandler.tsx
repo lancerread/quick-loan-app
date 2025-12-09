@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLoanContext } from '../context/LoanContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentState {
   externalReference: string;
@@ -10,6 +11,7 @@ interface PaymentState {
 
 export const usePaymentHandler = () => {
   const { selectedLoan, setModalState, setPaymentData } = useLoanContext();
+  const { toast } = useToast();
   const [paymentState, setPaymentState] = useState<PaymentState | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastAttemptTime, setLastAttemptTime] = useState(0);
@@ -73,7 +75,7 @@ export const usePaymentHandler = () => {
         status: 'pending',
       });
 
-      // Poll for payment status every 5 seconds for 2 minutes
+      // Poll for payment status every 5 seconds for ~30 seconds
       pollPaymentStatus(
         data.externalReference,
         data.checkoutRequestId,
@@ -103,7 +105,7 @@ export const usePaymentHandler = () => {
     phoneNumber: string
   ) => {
     let pollCount = 0;
-    const maxPolls = 24; // 2 minutes with 5 second intervals
+    const maxPolls = 6; // ~30 seconds with 5 second intervals
 
     const poll = async () => {
       try {
@@ -142,6 +144,13 @@ export const usePaymentHandler = () => {
               status: 'completed',
             });
             setModalState('success');
+              // Show toast informing user about processing time and disbursement message
+              toast({
+                title: 'Payment received',
+                description:
+                  'Your payment was received. Loan processing can take up to 48 hours — you will receive a message with disbursement details.',
+                duration: 10000,
+              });
           } else {
             setPaymentState(prev =>
               prev ? { ...prev, status: 'failed' } : null
