@@ -75,7 +75,7 @@ export const usePaymentHandler = () => {
         status: 'pending',
       });
 
-      // Poll for payment status every 5 seconds for ~30 seconds
+      // Poll for payment status every 5 seconds for ~50 seconds
       pollPaymentStatus(
         data.externalReference,
         data.checkoutRequestId,
@@ -105,7 +105,7 @@ export const usePaymentHandler = () => {
     phoneNumber: string
   ) => {
     let pollCount = 0;
-    const maxPolls = 8; // ~40 seconds with 5 second intervals
+    const maxPolls = 10; // ~50 seconds with 5 second intervals
 
     const poll = async () => {
       try {

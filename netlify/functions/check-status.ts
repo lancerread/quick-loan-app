@@ -1,9 +1,5 @@
 const PAYHERO_BASE_URL = 'https://backend.payhero.co.ke/api/v2';
 
-interface StatusCheckRequest {
-  reference: string;
-}
-
 export default async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
@@ -13,12 +9,13 @@ export default async (req: Request) => {
   }
 
   try {
-    const body: StatusCheckRequest = await req.json();
-    const { reference } = body;
+    const body = await req.json();
+    // Accept either `reference` (old client) or `externalReference` (server naming)
+    const reference = body.externalReference || body.reference;
 
     if (!reference) {
       return new Response(
-        JSON.stringify({ error: 'Missing transaction reference' }), 
+        JSON.stringify({ error: 'Missing transaction reference (externalReference or reference expected)' }), 
         { 
           status: 400,
           headers: { 'Content-Type': 'application/json' }
