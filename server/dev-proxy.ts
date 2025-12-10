@@ -97,10 +97,11 @@ app.post('/.netlify/functions/initiate-payment', async (req: Request, res: Respo
 // Check status endpoint
 app.post('/.netlify/functions/check-status', async (req: Request, res: Response) => {
   try {
-    const { externalReference } = req.body;
+    // Accept either `externalReference` (preferred) or `reference` (older clients)
+    const externalReference = req.body.externalReference || req.body.reference;
 
     if (!externalReference) {
-      return res.status(400).json({ error: 'Missing external reference' });
+      return res.status(400).json({ error: 'Missing external reference (externalReference or reference expected)' });
     }
 
     const apiUsername = process.env.PAYHERO_API_USERNAME;
