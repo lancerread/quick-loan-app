@@ -105,7 +105,7 @@ export const usePaymentHandler = () => {
     phoneNumber: string
   ) => {
     let pollCount = 0;
-    const maxPolls = 6; // ~30 seconds with 5 second intervals
+    const maxPolls = 8; // ~40 seconds with 5 second intervals
 
     const poll = async () => {
       try {
